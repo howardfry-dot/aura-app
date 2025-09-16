@@ -1,0 +1,6 @@
+This file configures your Netlify deployment.
+It tells Netlify where to find the serverless functions.
+[functions]
+
+Directory where our serverless functions are located.
+directory = "netlify/functions/"
