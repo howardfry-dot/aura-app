@@ -105,7 +105,22 @@ exports.handler = async function(event, context) {
         **Example UI/UX URLs:** ${body.exampleUrls || 'Not provided'}
         `;
 
-        const apiKey = ""; // This will be provided by the environment.
+        const apiKey = process.env.GEMINI_API_KEY; // This is read from Netlify's environment variables
+
+        // --- DIAGNOSTIC LOG ---
+        // This will help us see if the Netlify environment variable is being loaded correctly.
+        if (apiKey && apiKey.length > 5) {
+            console.log(`API Key has been loaded successfully. Length: ${apiKey.length}`);
+        } else {
+            console.log('CRITICAL ERROR: API Key is undefined or missing. Check Netlify environment variables.');
+            // Stop execution here if the key is missing, as the API call will fail.
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ error: 'Server configuration error: The API key is missing. Please contact the site administrator.' }),
+            };
+        }
+        // --- END DIAGNOSTIC LOG ---
+
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
         // Construct the full payload for the Gemini API.
@@ -125,7 +140,7 @@ exports.handler = async function(event, context) {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Gemini API Error:', errorText);
-            throw new Error(`API request failed with status ${response.status}`);
+            throw new Error(`API request failed with status ${response.status}. This is often due to a missing or invalid API key.`);
         }
 
         const result = await response.json();
